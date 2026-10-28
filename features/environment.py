@@ -1,14 +1,18 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
 
 def before_all(context):
     options = Options()
-    options.add_argument("--headless=new")     # Run in headless mode for CI/CD servers
-    options.add_argument("--no-sandbox")       # Bypass OS security model limitations
-    options.add_argument("--disable-dev-shm-usage") # Overcome limited resource/memory issues
-    options.add_argument("--disable-gpu")      # Applicable for headless environments
+    options.add_argument("--headless=new")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--window-size=1920,1080")
     
-    context.browser = webdriver.Chrome(options=options)
+    service = Service(ChromeDriverManager().install())
+    context.browser = webdriver.Chrome(service=service, options=options)
 
 def after_all(context):
     if hasattr(context, 'browser'):
