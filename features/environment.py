@@ -5,7 +5,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 def before_all(context):
     chrome_options = Options()
-    # Required flags for headless Chrome in Linux/Jenkins environments
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
@@ -14,16 +13,20 @@ def before_all(context):
     chrome_options.add_argument("--remote-allow-origins=*")
 
     try:
-        # Use webdriver-manager to auto-fetch matching driver
         service = Service(ChromeDriverManager().install())
-        context.browser = webdriver.Chrome(service=service, options=chrome_options)
+        driver = webdriver.Chrome(service=service, options=chrome_options)
     except Exception as e:
-        # Fallback: attempt direct system ChromeDriver if manager fails
-        print(f"WebDriverManager failed with: {e}. Trying direct Chrome init...")
-        context.browser = webdriver.Chrome(options=chrome_options)
+        print(f"WebDriverManager initialization failed: {e}. Falling back to default system Chrome...")
+        driver = webdriver.Chrome(options=chrome_options)
 
-    context.browser.implicitly_wait(10)
+    driver.implicitly_wait(10)
+    
+    # Assign to both context.driver and context.browser to prevent AttributeError
+    context.driver = driver
+    context.browser = driver
 
 def after_all(context):
-    if hasattr(context, 'browser'):
+    if hasattr(context, 'driver') and context.driver:
+        context.driver.quit()
+    elif hasattr(context, 'browser') and context.browser:
         context.browser.quit()
