@@ -1,11 +1,15 @@
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
-def before_scenario(context, scenario):
-    # Automatically launch Chrome and maximize browser window before each test scenario
-    context.driver = webdriver.Chrome()
-    context.driver.maximize_window()
+def before_all(context):
+    options = Options()
+    options.add_argument("--headless=new")     # Run in headless mode for CI/CD servers
+    options.add_argument("--no-sandbox")       # Bypass OS security model limitations
+    options.add_argument("--disable-dev-shm-usage") # Overcome limited resource/memory issues
+    options.add_argument("--disable-gpu")      # Applicable for headless environments
+    
+    context.browser = webdriver.Chrome(options=options)
 
-def after_scenario(context, scenario):
-    # Automatically close the browser after each test scenario finishes
-    if hasattr(context, 'driver'):
-        context.driver.quit()
+def after_all(context):
+    if hasattr(context, 'browser'):
+        context.browser.quit()
